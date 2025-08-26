@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나의 자기관리 체크리스트</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Malgun Gothic", sans-serif; background: #f2f6f4; padding: 20px; }
+    .container { background: white; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 30px; max-width: 900px; margin: 0 auto; }
+    
+    .nav-arrows { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; gap: 30px; }
+    .nav-arrow { background: #4caf50; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 20px; cursor: pointer; }
+    .nav-arrow:disabled { background: #cccccc; }
+    .page-indicator { font-weight: bold; color: #4caf50; font-size: 20px; }
+    
+    .page { display: none; }
+    .page.active { display: block; }
+    h2 { text-align: center; margin-bottom: 20px; color: #2e7d32; font-size: 24px; }
+    
+    .input-row { display: flex; margin-bottom: 20px; gap: 10px; }
+    .input-row input { flex: 1; padding: 12px; border-radius: 8px; border: 2px solid #ddd; font-size: 16px; }
+    .input-row button { padding: 12px 20px; background: #4caf50; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 16px; }
+    
+    .task { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 15px; background: #fff3a0; margin: 12px 0; padding: 16px; border-radius: 8px; border: 1px solid #e6d73a; }
+    .task input[type="checkbox"] { width: 20px; height: 20px; }
+    .task-text { font-weight: 500; font-size: 16px; }
+    .point { font-weight: bold; color: #4caf50; background: #f0f8f0; padding: 6px 12px; border-radius: 6px; border: 1px solid #4caf50; text-align: center; font-size: 14px; }
+    .delete-btn { background: none; border: none; font-size: 20px; cursor: pointer; }
+    .score { margin-top: 30px; text-align: center; font-weight: bold; color: #2e7d32; font-size: 18px; padding: 15px; background: #f0f8f0; border-radius: 8px; }
+    
+    .action-buttons { display: flex; justify-content: center; gap: 30px; margin-top: 20px; }
+    .action-buttons button { background: none; border: none; font-size: 24px; cursor: pointer; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+    th { background: #4caf50; color: white; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    
+    .goal-box, .diary-box { width: 100%; min-height: 150px; padding: 15px; border: 2px solid #4caf50; border-radius: 8px; font-family: inherit; font-size: 16px; resize: vertical; margin: 10px 0; }
+    .goal-box { background: #f0f8f0; }
+    .diary-box { background: #fff9f0; }
+    label { display: block; margin-bottom: 10px; font-weight: bold; color: #2e7d32; font-size: 18px; }
+    
+    .quote-container { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 12px; margin: 20px 0; }
+    .quote-text { font-size: 24px; font-weight: bold; color: #2e7d32; line-height: 1.6; margin-bottom: 15px; font-style: italic; }
+    .quote-author { font-size: 18px; color: #666; font-weight: bold; }
+    
+    .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #4caf50; color: white; padding: 20px 30px; border-radius: 10px; font-size: 16px; font-weight: bold; text-align: center; z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+    .toast.show { opacity: 1; visibility: visible; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav-arrows">
+      <button class="nav-arrow" id="prevBtn" onclick="changePage(-1)">←</button>
+      <span class="page-indicator">페이지 <span id="currentPage">1</span> / 6</span>
+      <button class="nav-arrow" id="nextBtn" onclick="changePage(1)">→</button>
+    </div>
+
+    <!-- 1페이지: 체크리스트 -->
+    <div class="page active" id="page1">
+      <h2>나의 자기관리 체크리스트 ✅</h2>
+      <div class="input-row">
+        <input type="text" id="newTask" placeholder="새로운 할 일을 입력하세요">
+        <button onclick="addTask()">추가</button>
+      </div>
+      <div id="taskList">
+        <div class="task">
+          <input type="checkbox" class="scoreBox" onchange="updateScore()">
+          <span class="task-text">AI 일반 공부하기</span>
+          <span class="point">20점</span>
+          <button class="delete-btn" onclick="deleteTask(this)">🍎</button>
+        </div>
+        <div class="task">
+          <input type="checkbox" class="scoreBox" onchange="updateScore()">
+          <span class="task-text">요리하기</span>
+          <span class="point">20점</span>
+          <button class="delete-btn" onclick="deleteTask(this)">🍎</button>
+        </div>
+        <div class="task">
+          <input type="checkbox" class="scoreBox" onchange="updateScore()">
+          <span class="task-text">1시간마다 스쿼트 운동하기</span>
+          <span class="point">20점</span>
+          <button class="delete-btn" onclick="deleteTask(this)">🍎</button>
+        </div>
+        <div class="task">
+          <input type="checkbox" class="scoreBox" onchange="updateScore()">
+          <span class="task-text">해질 무렵 줄넘기 50번하기</span>
+          <span class="point">20점</span>
+          <button class="delete-btn" onclick="deleteTask(this)">🍎</button>
+        </div>
+        <div class="task">
+          <input type="checkbox" class="scoreBox" onchange="updateScore()">
+          <span class="task-text">앱 개발 공부하기</span>
+          <span class="point">20점</span>
+          <button class="delete-btn" onclick="deleteTask(this)">🍎</button>
+        </div>
+      </div>
+      <div class="score" id="scoreBoard">오늘 성적: 0 / 100점</div>
+      <div class="action-buttons">
+        <button onclick="saveToStats()">💾 저장</button>
+      </div>
+    </div>
+
+    <!-- 2페이지: 일별 통계 -->
+    <div class="page" id="page2">
+      <h2>📅 이번 달 일별 성과</h2>
+      <table>
+        <thead>
+          <tr><th>일자</th><th>점수</th><th>퍼센트</th><th>비고</th></tr>
+        </thead>
+        <tbody id="dailyStatsBody">
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3페이지: 월별 통계 -->
+    <div class="page" id="page3">
+      <h2>📊 월별 성과 통계</h2>
+      <table>
+        <thead>
+          <tr><th>월</th><th>평균 점수</th><th>달성률</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1월</td><td id="month1">0.0</td><td>0%</td></tr>
+          <tr><td>2월</td><td id="month2">0.0</td><td>0%</td></tr>
+          <tr><td>3월</td><td id="month3">0.0</td><td>0%</td></tr>
+          <tr><td>4월</td><td id="month4">0.0</td><td>0%</td></tr>
+          <tr><td>5월</td><td id="month5">0.0</td><td>0%</td></tr>
+          <tr><td>6월</td><td id="month6">0.0</td><td>0%</td></tr>
+          <tr><td>7월</td><td id="month7">0.0</td><td>0%</td></tr>
+          <tr><td>8월</td><td id="month8">0.0</td><td>0%</td></tr>
+          <tr><td>9월</td><td id="month9">0.0</td><td>0%</td></tr>
+          <tr><td>10월</td><td id="month10">0.0</td><td>0%</td></tr>
+          <tr><td>11월</td><td id="month11">0.0</td><td>0%</td></tr>
+          <tr><td>12월</td><td id="month12">0.0</td><td>0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 4페이지: 목표 & 일기 -->
+    <div class="page" id="page4">
+      <h2>🎯 나의 목표 & 성찰 일기</h2>
+      <label>💭 올해의 목표와 포부</label>
+      <textarea class="goal-box" id="goalBox" placeholder="이곳에 1년간의 성과 달성을 위한 목표와 포부를 기록해보세요..."></textarea>
+      <label>📝 성찰과 달성 기록</label>
+      <textarea class="diary-box" id="diaryBox" placeholder="목표 달성 과정에서의 성찰, 반성, 성취감 등을 자유롭게 기록해보세요..."></textarea>
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="resetAll()" style="font-size: 30px; background: none; border: none; cursor: pointer;">🍎🍎</button>
+      </div>
+    </div>
+
+    <!-- 5페이지: 연도별 통계 -->
+    <div class="page" id="page5">
+      <h2>📈 연도별 성과 히스토리</h2>
+      <table>
+        <thead>
+          <tr><th>연도</th><th>연간 평균 점수</th><th>최고 달성률</th><th>목표 달성도</th><th>상태</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2025</td><td>진행중</td><td>-</td><td>-</td><td>🔥 활동중</td></tr>
+          <tr><td>2024</td><td>-</td><td>-</td><td>-</td><td>📝 준비중</td></tr>
+          <tr><td>2023</td><td>-</td><td>-</td><td>-</td><td>📝 준비중</td></tr>
+          <tr><td>2022</td><td>-</td><td>-</td><td>-</td><td>📝 준비중</td></tr>
+          <tr><td>2021</td><td>-</td><td>-</td><td>-</td><td>📝 준비중</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top: 30px; text-align: center; font-weight: bold; color: #2196F3; font-size: 18px;">
+        🏆 총 평균 점수: <span>데이터 수집중</span>
+      </div>
+    </div>
+
+    <!-- 6페이지: 명언 -->
+    <div class="page" id="page6">
+      <h2>🌟 이달의 시간관리 명언</h2>
+      <div class="quote-container">
+        <div class="quote-text">
+          "시간은 인생의 동전이다. 그것은 당신이 가진 유일한 동전이며, 어디에 쓸지는 오직 당신만이 결정할 수 있다."
+        </div>
+        <div class="quote-author">- 칼 샌드버그 -</div>
+      </div>
+      
+      <div style="margin-top: 30px; text-align: center;">
+        <h3 style="color: #2e7d32; margin-bottom: 15px;">💡 오늘의 시간관리 팁</h3>
+        <div style="background: #f0f8f0; padding: 20px; border-radius: 8px; text-align: left; line-height: 1.6;">
+          • <strong>우선순위 설정:</strong> 중요하고 긴급한 일부터 처리하세요<br>
+          • <strong>시간 블록킹:</strong> 각 작업에 정해진 시간을 할당하세요<br>
+          • <strong>휴식 시간:</strong> 집중력 향상을 위해 적절한 휴식을 가져요<br>
+          • <strong>루틴 만들기:</strong> 일정한 패턴으로 하루를 구성하세요<br>
+          • <strong>디지털 해독:</strong> 불필요한 알림과 방해 요소를 차단하세요
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">💾 저장 완료!</div>
+
+  <script>
+    let currentPageNum = 1;
+    let basePoints = 100;
+
+    function changePage(direction) {
+      const newPage = currentPageNum + direction;
+      if (newPage >= 1 && newPage <= 6) {
+        document.getElementById(`page${currentPageNum}`).classList.remove('active');
+        currentPageNum = newPage;
+        document.getElementById(`page${currentPageNum}`).classList.add('active');
+        document.getElementById('currentPage').textContent = currentPageNum;
+        
+        document.getElementById('prevBtn').disabled = (currentPageNum === 1);
+        document.getElementById('nextBtn').disabled = (currentPageNum === 6);
+        
+        if (currentPageNum === 2) updateDailyStats();
+        if (currentPageNum === 3) updateMonthlyStats();
+      }
+    }
+
+    function updateScore() {
+      const checkboxes = document.querySelectorAll(".scoreBox");
+      let score = 0;
+      checkboxes.forEach(cb => {
+        if (cb.checked) score += 20;
+      });
+      document.getElementById('scoreBoard').textContent = `오늘 성적: ${score} / ${basePoints}점`;
+    }
+
+    function addTask() {
+      const tasks = document.querySelectorAll('.task');
+      if (tasks.length >= 5) {
+        alert('새 항목을 추가하려면 먼저 기존 항목 중 하나를 삭제해주세요!');
+        return;
+      }
+      
+      const input = document.getElementById('newTask');
+      const taskName = input.value.trim();
+      if (!taskName) return;
+      
+      const taskList = document.getElementById('taskList');
+      const taskDiv = document.createElement('div');
+      taskDiv.className = 'task';
+      taskDiv.innerHTML = `
+        <input type="checkbox" class="scoreBox" onchange="updateScore()">
+        <span class="task-text">${taskName}</span>
+        <span class="point">20점</span>
+        <button class="delete-btn" onclick="deleteTask(this)">🍎</button>
+      `;
+      taskList.appendChild(taskDiv);
+      input.value = '';
+      basePoints += 20;
+      updateScore();
+    }
+
+    function deleteTask(btn) {
+      btn.parentElement.remove();
+      basePoints -= 20;
+      updateScore();
+    }
+
+    function saveToStats() {
+      const checkboxes = document.querySelectorAll(".scoreBox");
+      let score = 0;
+      checkboxes.forEach(cb => {
+        if (cb.checked) score += 20;
+      });
+      
+      if (score === 0) {
+        showToast('저장할 점수가 없습니다!');
+        return;
+      }
+      
+      const today = new Date();
+      const dateKey = today.getFullYear() + '-' + today.getMonth() + '-' + today.getDate();
+      
+      let dailyData = JSON.parse(localStorage.getItem('dailyStats') || '{}');
+      dailyData[dateKey] = { score: score, date: today.getDate() };
+      localStorage.setItem('dailyStats', JSON.stringify(dailyData));
+      
+      // 월별 통계 업데이트
+      updateMonthlyStats();
+      
+      showToast(`${score}점이 저장되었습니다!`);
+    }
+
+    function updateMonthlyStats() {
+      const today = new Date();
+      const currentMonth = today.getMonth() + 1;
+      const dailyData = JSON.parse(localStorage.getItem('dailyStats') || '{}');
+      
+      let monthlyTotals = {};
+      let monthlyCounts = {};
+      
+      // 모든 저장된 데이터 분석
+      for (let dateKey in dailyData) {
+        const parts = dateKey.split('-');
+        const year = parseInt(parts[0]);
+        const month = parseInt(parts[1]) + 1;
+        const monthKey = `month${month}`;
+        
+        if (year === today.getFullYear()) {
+          if (!monthlyTotals[monthKey]) {
+            monthlyTotals[monthKey] = 0;
+            monthlyCounts[monthKey] = 0;
+          }
+          monthlyTotals[monthKey] += dailyData[dateKey].score;
+          monthlyCounts[monthKey]++;
+        }
+      }
+      
+      // 테이블 업데이트
+      for (let i = 1; i <= 12; i++) {
+        const monthKey = `month${i}`;
+        const element = document.getElementById(monthKey);
+        if (element) {
+          if (monthlyTotals[monthKey]) {
+            const avg = monthlyTotals[monthKey] / monthlyCounts[monthKey];
+            element.textContent = avg.toFixed(1);
+          } else {
+            element.textContent = '0.0';
+          }
+        }
+      }
+    }
+
+    function updateDailyStats() {
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      
+      const tbody = document.getElementById('dailyStatsBody');
+      tbody.innerHTML = '';
+      
+      const dailyData = JSON.parse(localStorage.getItem('dailyStats') || '{}');
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = currentYear + '-' + currentMonth + '-' + day;
+        const dayData = dailyData[dateKey];
+        const row = document.createElement('tr');
+        
+        if (dayData) {
+          row.innerHTML = `<td>${day}일</td><td>${dayData.score}점</td><td>${Math.round(dayData.score/100*100)}%</td><td>-</td>`;
+        } else {
+          row.innerHTML = `<td>${day}일</td><td>-</td><td>-</td><td>-</td>`;
+          row.style.opacity = '0.5';
+        }
+        tbody.appendChild(row);
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function resetAll() {
+      if (confirm('모든 데이터를 삭제하시겠습니까?')) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    // 초기화
+    document.getElementById('prevBtn').disabled = true;
+    updateScore();
+    
+    document.getElementById('newTask').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') addTask();
+    });
+  </script>
+</body>
+</html>
