@@ -89,6 +89,9 @@
                 <div class="task"><input type="checkbox" onchange="updateScore()"><span class="task-text">앱 개발 공부하기</span><span class="point">20점</span><button class="delete-btn" onclick="deleteThis(this)">🍎</button></div>
             </div>
             <div class="score" id="scoreBoard">오늘 성적: 0 / 100점</div>
+            <div style="text-align: center; margin-top: 15px; padding: 12px; background: rgba(255, 193, 7, 0.1); border: 2px solid rgba(255, 193, 7, 0.3); border-radius: 12px; color: #856404;">
+                <strong>⚠️ 초기화 안내:</strong> 체크박스가 초기화되지 않으면 <strong>F5</strong>를 눌러 새로고침해주세요.
+            </div>
             <div class="action-buttons"><button onclick="saveToStats()">🍏 저장</button></div>
         </div>
 
@@ -167,7 +170,10 @@
         function saveInputs(){const g=document.getElementById('goalBox').value.trim(),d=document.getElementById('diaryBox').value.trim();if(!g&&!d){alert('저장할 내용이 없습니다!');return}localStorage.setItem('userGoal',g);localStorage.setItem('userDiary',d);alert('목표와 일기가 저장되었습니다!')}
         function resetAll(){if(confirm('⚠️ 정말로 모든 데이터를 삭제하시겠습니까?\n\n계속하시겠습니까?')){localStorage.clear();alert('모든 데이터가 삭제되었습니다.');location.reload()}}
         function loadSavedData(){document.getElementById('goalBox').value=localStorage.getItem('userGoal')||'';document.getElementById('diaryBox').value=localStorage.getItem('userDiary')||''}
+        // 초기화
         updateDateTime();setInterval(updateDateTime,1000);const ni=document.getElementById('newTask');if(ni)ni.addEventListener('keypress',e=>{if(e.key==='Enter')addTask()});
+        // 페이지 로드 시 즉시 날짜 체크
+        checkDateChange();
     </script>
 </body>
 </html>
